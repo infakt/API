@@ -10,6 +10,90 @@ Pełna dokumentacja interaktywna: https://docs.infakt.pl
 
 ---
 
+## Spis treści
+
+- [Punkt dostępowy](#punkt-dostępowy)
+- [Uwierzytelnianie](#uwierzytelnianie)
+- [Zakresy uprawnień (Scopes)](#zakresy-uprawnień-scopes)
+- [Sandbox](#sandbox)
+- [Przychody](#przychody)
+  - [Faktury VAT](#faktury-vat)
+    - [Typy faktur](#typy-faktur)
+    - [Tworzenie faktury (asynchroniczne)](#tworzenie-faktury-asynchroniczne)
+    - [Tworzenie faktury (synchroniczne)](#tworzenie-faktury-synchroniczne)
+    - [Sprawdzenie statusu tworzenia](#sprawdzenie-statusu-tworzenia)
+    - [Listowanie faktur](#listowanie-faktur)
+    - [Podgląd faktury](#podgląd-faktury)
+    - [Edycja faktury](#edycja-faktury)
+    - [Usuwanie faktury](#usuwanie-faktury)
+    - [Pobranie PDF](#pobranie-pdf)
+    - [Wysyłka emailem](#wysyłka-emailem)
+    - [Oznaczenie jako zapłacona](#oznaczenie-jako-zapłacona)
+    - [Oznaczenie jako zaksięgowana](#oznaczenie-jako-zaksięgowana)
+    - [Następny numer faktury](#następny-numer-faktury)
+    - [Załączniki](#załączniki)
+    - [Link do udostępniania](#link-do-udostępniania)
+    - [Szybkie płatności](#szybkie-płatności)
+    - [Definicja faktury VAT](#definicja-faktury-vat)
+    - [Definicja pozycji (Service)](#definicja-pozycji-service)
+    - [Odbiorca JST](#odbiorca-jst-jednostka-samorządu-terytorialnego)
+  - [Faktury korygujące VAT](#faktura-korygująca)
+  - [Faktury marża](#faktura-marża)
+  - [Faktury zaliczkowe](#faktura-zaliczkowa)
+  - [Faktury końcowe](#faktura-końcowa)
+  - [Faktury OSS](#faktury-oss)
+  - [Faktury korygujące OSS](#faktury-korygujące-oss)
+  - [Faktury wewnętrzne](#faktury-wewnętrzne)
+  - [Raporty fiskalne](#raporty-fiskalne)
+  - [Dowody wewnętrzne](#dowody-wewnętrzne)
+  - [Utarg dzienny](#utarg-dzienny)
+- [Klienci](#klienci)
+  - [Listowanie klientów](#listowanie-klientów)
+  - [Podgląd klienta](#podgląd-klienta)
+  - [Tworzenie klienta](#tworzenie-klienta)
+  - [Edycja klienta](#edycja-klienta)
+  - [Usuwanie klienta](#usuwanie-klienta)
+  - [Definicja klienta](#definicja-klienta)
+- [Produkty](#produkty)
+  - [Listowanie produktów](#listowanie-produktów)
+  - [Podgląd produktu](#podgląd-produktu)
+  - [Tworzenie produktu](#tworzenie-produktu)
+  - [Edycja produktu](#edycja-produktu)
+  - [Usuwanie produktu](#usuwanie-produktu)
+  - [Definicja produktu](#definicja-produktu)
+- [Konta bankowe](#konta-bankowe)
+- [Koszty](#koszty)
+- [Księgowość](#księgowość)
+  - [JPK V7](#jpk-v7)
+  - [Podatek VAT-UE](#podatek-vat-ue)
+  - [Podatek dochodowy](#podatek-dochodowy)
+  - [Księga przychodów i rozchodów](#księga-przychodów-i-rozchodów)
+  - [Składki ZUS](#składki-zus)
+  - [Koszyk płatności za podatki](#koszyk-płatności-za-podatki)
+- [Dane referencyjne](#dane-referencyjne)
+  - [Stawki VAT](#stawki-vat)
+  - [Stawki VAT dla OSS](#stawki-vat-dla-oss)
+  - [Podstawy zwolnień z VAT](#podstawy-zwolnień-z-vat)
+  - [Stawki ryczałtu ewidencjonowanego](#stawki-ryczałtu-ewidencjonowanego)
+  - [Kody GTU](#kody-gtu)
+  - [Oznaczenia dokumentów przychodowych](#oznaczenia-dokumentów-przychodowych)
+  - [Rodzaje transakcji](#rodzaje-transakcji)
+  - [Kraje](#kraje)
+- [Dane użytkownika](#dane-użytkownika)
+- [Metody płatności](#metody-płatności)
+- [Filtrowanie](#filtrowanie)
+- [Stronicowanie](#stronicowanie)
+- [Sortowanie](#sortowanie)
+- [Zawężanie pól (Partial Response)](#zawężanie-pól-partial-response)
+- [Kody błędów](#kody-błędów)
+- [Limity](#limity)
+- [Kodowanie](#kodowanie)
+- [Webhooki](#webhooki)
+- [KSeF (e-Faktury)](#ksef-e-faktury)
+- [Przydatne linki](#przydatne-linki)
+
+---
+
 ## Punkt dostępowy
 
 | Środowisko | URL |
@@ -74,38 +158,29 @@ Rejestracja konta sandbox: https://konto.sandbox-infakt.pl/rejestracja
 
 ---
 
-## Zasoby API
+## Przychody
 
-### Przychody
+### Faktury VAT
 
-| Zasób | Endpoint | Operacje |
+#### Typy faktur
+
+| Typ | Endpoint | Opis |
 |---|---|---|
-| Faktury VAT | `/invoices.json` | CRUD, wysyłka, PDF, KSeF |
-| Faktury korygujące | `/corrective_invoices.json` | CRUD, wysyłka, KSeF |
-| Faktury marża | `/margin_invoices.json` | CRUD, wysyłka, KSeF |
-| Faktury zaliczkowe | `/advance_invoices.json` | CRUD, wysyłka, KSeF |
-| Faktury końcowe | `/final_invoices.json` | CRUD, wysyłka, KSeF |
-| Faktury OSS | `/oss_invoices.json` | CRUD |
-| Raporty fiskalne | `/fiscal_reports.json` | CRUD |
-| Utargi dzienne | `/daily_revenues.json` | CRUD |
+| Faktury VAT | `/invoices.json` | Standardowe faktury VAT i proforma |
+| Faktury korygujące VAT | `/corrective_invoices.json` | Korekty do faktur VAT |
+| Faktury marża | `/margin_invoices.json` | Faktury w procedurze marży |
+| Faktury zaliczkowe | `/advance_invoices.json` | Faktury zaliczkowe |
+| Faktury końcowe | `/final_invoices.json` | Faktury końcowe (rozliczające zaliczki) |
+| Faktury OSS | `/oss_invoices.json` | Faktury w procedurze OSS |
+| Faktury korygujące OSS | `/corrective_oss_invoices.json` | Korekty do faktur OSS |
+| Faktury wewnętrzne | `/internal_invoices.json` | Faktury wewnętrzne |
+| Raporty fiskalne | `/fiscal_reports.json` | Raporty z kasy fiskalnej |
+| Dowody wewnętrzne | `/internal_evidences.json` | Dowody wewnętrzne |
+| Utargi dzienne | `/daily_revenues.json` | Ewidencja utargów |
 
-### Pozostałe
+Wspólne operacje dla typów faktur: listowanie, podgląd, tworzenie (async), edycja, usuwanie, PDF, wysyłka emailem, oznaczenie jako zapłacona, następny numer, wysyłka do KSeF, pobranie XML KSeF. Szczegóły dostępnych operacji różnią się w zależności od typu — patrz dokumentacja interaktywna.
 
-| Zasób | Endpoint | Operacje |
-|---|---|---|
-| Klienci | `/clients.json` | CRUD |
-| Produkty | `/products.json` | CRUD |
-| Konta bankowe | `/bank_accounts.json` | CRUD |
-| Koszty | `/costs.json` | CRUD |
-| Skany dokumentów | `/document_scans.json` | Upload, listowanie |
-| Składki ZUS | `/zus_contributions.json` | Odczyt |
-| Podatek VAT/PIT | `/vat.json`, `/pit.json` | Odczyt |
-| KSeF (e-Faktury) | `/ksef/...` | Integracja, wysyłka, import |
-| Dane użytkownika | `/account.json` | Odczyt |
-
----
-
-## Tworzenie faktur (asynchroniczne)
+### Tworzenie faktury (asynchroniczne)
 
 Tworzenie faktury odbywa się asynchronicznie:
 
@@ -128,7 +203,7 @@ curl -H "X-inFakt-ApiKey: KLUCZ" \
   https://api.infakt.pl/api/v3/async/invoices.json
 ```
 
-### Odpowiedź
+**Odpowiedź (202):**
 
 ```json
 {
@@ -141,13 +216,7 @@ curl -H "X-inFakt-ApiKey: KLUCZ" \
 }
 ```
 
-### Statusy faktury przy tworzeniu
-
-| Status | Opis |
-|---|---|
-| `draft` | Szkic (domyślnie) |
-| `paid` | Od razu oznaczona jako zapłacona (wymaga `paid_date`) |
-| `printed` | Wydrukowana i uwzględniona w księgowości |
+Faktura zawsze tworzy się w statusie `draft`. Po utworzeniu można oznaczyć ją jako zapłaconą, wydrukowaną lub wysłaną.
 
 ### Sprawdzenie statusu tworzenia
 
@@ -155,9 +224,176 @@ curl -H "X-inFakt-ApiKey: KLUCZ" \
 GET /api/v3/async/invoices/status/{invoice_task_reference_number}.json
 ```
 
----
+### Listowanie faktur
 
-## Definicja faktury VAT
+```bash
+GET /api/v3/invoices.json
+```
+
+Obsługuje filtrowanie, sortowanie, stronicowanie i zawężanie pól.
+
+### Podgląd faktury
+
+```bash
+GET /api/v3/invoices/{invoice_uuid}.json
+```
+
+### Edycja faktury
+
+```bash
+PUT /api/v3/invoices/{invoice_uuid}.json
+```
+
+```bash
+curl -H "X-inFakt-ApiKey: KLUCZ" \
+  -H "Content-Type: application/json" \
+  -X PUT \
+  -d '{"invoice":{"notes":"Dodatkowe uwagi"}}' \
+  https://api.infakt.pl/api/v3/invoices/{invoice_uuid}.json
+```
+
+### Usuwanie faktury
+
+```bash
+DELETE /api/v3/invoices/{invoice_uuid}.json
+```
+
+### Pobranie PDF
+
+```bash
+GET /api/v3/invoices/{invoice_uuid}/pdf.json?document_type=original&locale=pl
+```
+
+**Parametry:**
+
+| Parametr | Wymagany | Opis |
+|---|---|---|
+| `document_type` | Tak | `original_copy`, `original`, `copy`, `original_duplicate`, `copy_duplicate`, `duplicate`, `regular`, `double_regular` |
+| `locale` | Nie | `pl` – Polski, `en` – Angielski, `pe` – polsko-angielski |
+
+> Pobranie PDF zmienia status faktury na „Wydrukowano".
+
+### Wysyłka emailem
+
+```bash
+POST /api/v3/invoices/{invoice_uuid}/deliver_via_email.json
+```
+
+```json
+{
+  "print_type": "original",
+  "locale": "pl",
+  "recipient": "klient@example.com",
+  "send_copy": false
+}
+```
+
+| Parametr | Wymagany | Opis |
+|---|---|---|
+| `print_type` | Tak | `original`, `copy`, `original_duplicate`, `copy_duplicate`, `duplicate`, `regular` |
+| `locale` | Nie | `pl`, `en`, `pe` |
+| `recipient` | Nie | Email odbiorcy (domyślnie email klienta) |
+| `send_copy` | Nie | Czy wysłać kopię do właściciela konta |
+
+> Wysłanie emailem zmienia status faktury na „Wysłano".
+
+### Oznaczenie jako zapłacona
+
+```bash
+POST /api/v3/async/invoices/{invoice_uuid}/paid.json
+```
+
+Operacja asynchroniczna. Kod 201 oznacza przyjęcie zlecenia, nie opłacenie.
+
+| Parametr | Wymagany | Opis |
+|---|---|---|
+| `paid_date` | Nie | Data opłacenia (RRRR-MM-DD), nie wcześniejsza niż data wystawienia |
+
+W ciele zapytania można podać `allow_correction: true` — umożliwia opłacenie faktury powodujące korekty księgowe.
+
+### Oznaczenie jako zaksięgowana
+
+```bash
+PUT /api/v3/invoices/{invoice_uuid}/mark_as_accounted.json
+```
+
+Uwzględnia fakturę w szkicu w księgowości.
+
+### Następny numer faktury
+
+```bash
+GET /api/v3/invoices/next_number.json?kind=vat&date=2024-01-15
+```
+
+| Parametr | Wymagany | Opis |
+|---|---|---|
+| `kind` | Nie | `vat`, `proforma`, `advance`, `final`, `margin` |
+| `date` | Nie | Data wystawienia (RRRR-MM-DD) |
+
+**Odpowiedź:**
+
+```json
+{
+  "invoice_date": "2024-01-15",
+  "invoice_kind": "vat",
+  "next_number": "5/01/2024"
+}
+```
+
+### Załączniki
+
+**Listowanie załączników:**
+
+```bash
+GET /api/v3/invoices/{invoice_uuid}/attachments.json
+```
+
+**Pobranie załącznika:**
+
+```bash
+GET /api/v3/invoices/{invoice_uuid}/attachments/{attachment_id}.json
+```
+
+Zwraca obiekt z polami: `id`, `name`, `content_type`, `download_link` (ważny 10 minut).
+
+### Link do udostępniania
+
+**Pobierz link:**
+
+```bash
+GET /api/v3/invoices/{invoice_uuid}/share_links.json
+```
+
+**Stwórz link:**
+
+```bash
+POST /api/v3/invoices/{invoice_uuid}/share_links.json
+```
+
+**Przedłuż ważność (o 30 dni):**
+
+```bash
+POST /api/v3/invoices/{invoice_uuid}/share_links/prolong.json
+```
+
+**Usuń link:**
+
+```bash
+DELETE /api/v3/invoices/{invoice_uuid}/share_links.json
+```
+
+**Odpowiedź:**
+
+```json
+{
+  "share_link": "https://app.infakt.pl/app/twoja-faktura/f431d987-...",
+  "expiration_date": "2024-02-15"
+}
+```
+
+Link umożliwia podgląd faktury, drukowanie, import jako koszt i opłacenie przez szybkie płatności.
+
+### Definicja faktury VAT
 
 | Pole | Typ | Opis |
 |---|---|---|
@@ -225,6 +461,438 @@ GET /api/v3/async/invoices/status/{invoice_task_reference_number}.json
 
 > **Uwaga:** Aby wystawić fakturę od brutto, podaj `gross_price` bez `unit_net_price`/`net_price`. System wyliczy wartości netto.
 
+> **Uwaga:** Wszystkie kwoty podawane są w **groszach** (1 PLN = 100 groszy).
+
+### Faktura korygująca
+
+```bash
+POST /api/v3/async/corrective_invoices.json
+```
+
+Dodatkowe pola:
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `corrected_invoice_number` | string | Numer faktury korygowanej |
+| `corrected_invoice_date` | date | Data faktury korygowanej |
+| `correction_reason` | string | `mistake` lub `other` |
+| `confirmation` | boolean | Otrzymano podpisaną fakturę |
+| `confirmation_date` | date | Data podpisania |
+
+### Faktura marża
+
+```bash
+POST /api/v3/async/margin_invoices.json
+```
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `margin_kind` | string | Procedura marży (wymagane) |
+| `gross_price` | integer | Brutto łącznie z marżą w groszach |
+| `margin_amount_price` | integer | Marża w groszach |
+
+Procedury marży (`margin_kind`):
+- `second_hand_goods` — towary używane
+- `travel_agencies` — biura podróży
+- `works_of_art` — dzieła sztuki
+- `collectables_and_antiques` — przedmioty kolekcjonerskie
+
+### Faktura zaliczkowa
+
+```bash
+POST /api/v3/async/advance_invoices.json
+```
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `advance_date` | date | Data otrzymania zaliczki |
+| `advance_price` | integer | Wpłacona zaliczka w groszach |
+| `previous_advance_id` | integer | ID poprzedniej zaliczki |
+| `previous_advances` | array | Lista poprzednich zaliczek (readonly) |
+
+### Odbiorca JST (Jednostka Samorządu Terytorialnego)
+
+Przy fakturach dla JST można podać adres odbiorcy:
+
+```json
+{
+  "invoice": {
+    "local_government_recipient_address": {
+      "company_name": "Urząd Miejski Krakowa",
+      "nip": "1060006024",
+      "street": "Plac Wszystkich Świętych",
+      "street_number": "3-4",
+      "postal_code": "31-004",
+      "city": "Kraków",
+      "country": "PL"
+    }
+  }
+}
+```
+
+---
+
+## Klienci
+
+### Listowanie klientów
+
+```bash
+GET /api/v3/clients.json
+```
+
+Obsługuje filtrowanie, sortowanie, stronicowanie i zawężanie pól.
+
+```bash
+# Wyszukaj klienta po NIP
+GET /api/v3/clients.json?q[nip_eq]=1234567890
+
+# Wyszukaj po nazwie firmy
+GET /api/v3/clients.json?q[company_name_cont]=Firma
+```
+
+### Podgląd klienta
+
+```bash
+GET /api/v3/clients/{client_id}.json
+```
+
+### Tworzenie klienta
+
+```bash
+curl -H "X-inFakt-ApiKey: KLUCZ" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  -d '{"client":{
+    "company_name": "Nowa Firma Sp. z o.o.",
+    "nip": "1234567890",
+    "street": "Główna",
+    "street_number": "10",
+    "city": "Kraków",
+    "postal_code": "30-001",
+    "country": "PL",
+    "payment_method": "transfer",
+    "days_to_payment": 14
+  }}' \
+  https://api.infakt.pl/api/v3/clients.json
+```
+
+### Edycja klienta
+
+```bash
+curl -H "X-inFakt-ApiKey: KLUCZ" \
+  -H "Content-Type: application/json" \
+  -X PUT \
+  -d '{"client":{"company_name":"Zmieniona Nazwa Sp. z o.o."}}' \
+  https://api.infakt.pl/api/v3/clients/{client_id}.json
+```
+
+### Usuwanie klienta
+
+```bash
+DELETE /api/v3/clients/{client_id}.json
+```
+
+### Definicja klienta
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `id` | integer | ID klienta (readonly) |
+| `company_name` | string | Nazwa firmy |
+| `first_name` | string | Imię |
+| `last_name` | string | Nazwisko |
+| `nip` | string | NIP |
+| `street`, `street_number`, `flat_number` | string | Adres |
+| `city`, `postal_code` | string | Miasto i kod (NN-NNN) |
+| `country` | string | Kod Alpha-2 (wymagane) |
+| `email` | string | Email |
+| `phone_number` | string | Telefon |
+| `web_site` | string | Strona WWW |
+| `payment_method` | string | Domyślna metoda płatności |
+| `days_to_payment` | integer | Termin płatności w dniach |
+| `business_activity_kind` | string | `private_person`, `self_employed`, `other_business` |
+| `receiver` | string | Odbierający dokument |
+| `invoice_note` | string | Domyślne uwagi do faktur |
+| `note` | string | Uwagi o kliencie |
+| `same_forward_address` | boolean | Adres koresp. = firmowy (domyślnie true) |
+| `mailing_company_name` | string | Nazwa firmy do korespondencji |
+| `mailing_street` | string | Ulica korespondencyjna |
+| `mailing_city` | string | Miasto korespondencyjne |
+| `mailing_postal_code` | string | Kod korespondencyjny |
+
+---
+
+## Produkty
+
+### Listowanie produktów
+
+```bash
+GET /api/v3/products.json
+```
+
+Obsługuje filtrowanie, sortowanie, stronicowanie i zawężanie pól.
+
+```bash
+# Wyszukaj produkt po nazwie
+GET /api/v3/products.json?q[name_eq]=Usługa programistyczna
+
+# Sortowanie po nazwie
+GET /api/v3/products.json?order=name asc
+
+# Tylko wybrane pola
+GET /api/v3/products.json?fields=name,unit_net_price,tax_symbol
+```
+
+### Podgląd produktu
+
+```bash
+GET /api/v3/products/{product_id}.json
+```
+
+### Tworzenie produktu
+
+```bash
+curl -H "X-inFakt-ApiKey: KLUCZ" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  -d '{"product":{
+    "name": "Usługa programistyczna",
+    "unit_net_price": 50000,
+    "tax_symbol": "23",
+    "unit": "godz.",
+    "pkwiu": "62.01.11"
+  }}' \
+  https://api.infakt.pl/api/v3/products.json
+```
+
+**Odpowiedź (201):**
+
+```json
+{
+  "id": 34935,
+  "name": "Usługa programistyczna",
+  "unit_net_price": 50000,
+  "net_price": 50000,
+  "tax_price": 11500,
+  "gross_price": 61500,
+  "tax_symbol": "23",
+  "unit": "godz.",
+  "quantity": 1,
+  "pkwiu": "62.01.11",
+  "cn": null,
+  "pkob": null,
+  "gtu_id": null,
+  "discount": "0.0",
+  "flat_rate_tax_symbol": "",
+  "unit_net_price_before_discount": 50000,
+  "purchase_unit_net_price": 0,
+  "purchase_unit_gross_price": 0,
+  "symbol": "62.01.11 / - / -"
+}
+```
+
+### Edycja produktu
+
+```bash
+curl -H "X-inFakt-ApiKey: KLUCZ" \
+  -H "Content-Type: application/json" \
+  -X PUT \
+  -d '{"product":{"unit_net_price": 60000}}' \
+  https://api.infakt.pl/api/v3/products/{product_id}.json
+```
+
+### Usuwanie produktu
+
+```bash
+DELETE /api/v3/products/{product_id}.json
+```
+
+### Definicja produktu
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `id` | integer | ID produktu (readonly) |
+| `name` | string | Nazwa produktu (wymagane) |
+| `unit_net_price` | integer | Cena netto/szt. w groszach |
+| `net_price` | integer | Wartość netto w groszach |
+| `tax_price` | integer | VAT w groszach (readonly) |
+| `gross_price` | integer | Wartość brutto w groszach |
+| `tax_symbol` | string | Stawka VAT (np. `23`, `8`, `5`, `0`, `zw`, `np`) |
+| `unit` | string | Jednostka (np. `szt.`, `godz.`, `usł.`) |
+| `quantity` | number | Domyślna ilość |
+| `pkwiu` | string | Kod PKWiU |
+| `cn` | string | Kod CN |
+| `pkob` | string | Kod PKOB |
+| `gtu_id` | integer | ID kodu GTU |
+| `discount` | string | Rabat w procentach |
+| `flat_rate_tax_symbol` | string | Stawka ryczałtu |
+| `unit_net_price_before_discount` | integer | Cena przed rabatem w groszach |
+| `purchase_unit_net_price` | integer | Cena zakupu netto/szt. w groszach |
+| `purchase_unit_gross_price` | integer | Cena zakupu brutto/szt. w groszach |
+| `symbol` | string | Symbol (readonly, generowany z pkwiu/cn/pkob) |
+
+---
+
+## Konta bankowe
+
+**Scope:** `api:sensitive:bank_accounts:write`
+
+> Przed użyciem numeru konta na fakturze, konto musi być dodane i zweryfikowane w aplikacji.
+
+### Operacje
+
+```bash
+# Listowanie
+GET /api/v3/bank_accounts.json
+
+# Podgląd
+GET /api/v3/bank_accounts/{bank_account_id}.json
+
+# Tworzenie
+POST /api/v3/bank_accounts.json
+
+# Edycja
+PUT /api/v3/bank_accounts/{bank_account_id}.json
+
+# Usuwanie
+DELETE /api/v3/bank_accounts/{bank_account_id}.json
+```
+
+### Tworzenie konta
+
+```bash
+curl -H "X-inFakt-ApiKey: KLUCZ" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  -d '{"bank_account":{
+    "account_number": "PL61109010140000071219812874",
+    "bank_name": "Santander Bank Polska"
+  }}' \
+  https://api.infakt.pl/api/v3/bank_accounts.json
+```
+
+### Definicja konta bankowego
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `id` | integer | ID konta (readonly) |
+| `account_number` | string | Numer konta (IBAN) |
+| `bank_name` | string | Nazwa banku |
+| `swift` | string | Kod SWIFT |
+| `currency` | string | Waluta konta |
+| `custom_name` | string | Nazwa własna |
+| `default` | boolean | Czy konto domyślne |
+
+---
+
+## Koszty
+
+**Scope:** `api:costs:read`, `api:costs:write`
+
+| Operacja | Metoda | Endpoint |
+|---|---|---|
+| Upload kosztu | `POST` | `/documents/costs/upload.json` |
+| Listowanie kosztów | `GET` | `/documents/costs.json` |
+| Podgląd kosztu | `GET` | `/documents/costs/{uuid}.json` |
+| Pobranie wielu kosztów (ZIP) | `GET` | `/documents/costs/download_many.json` |
+| Oznacz jako zapłacone (wiele) | `PUT` | `/documents/costs/paid_many.json` |
+| Oznacz jako niezapłacone (wiele) | `PUT` | `/documents/costs/unpaid_many.json` |
+| Zmień nazwę pliku (wiele) | `PUT` | `/documents/costs/update_file_name_many.json` |
+| Przypisz kategorię kosztową (wiele) | `POST` | `/documents/costs/assign_cost_category_many.json` |
+| Dodaj notatkę (wiele) | `POST` | `/documents/costs/create_note_many.json` |
+| Usuń wiele kosztów | `DELETE` | `/documents/costs/destroy_many.json` |
+
+---
+
+## Księgowość
+
+### JPK V7
+
+**Scope:** `api:accounting:read`, `api:accounting:write`
+
+| Operacja | Metoda | Endpoint |
+|---|---|---|
+| Listowanie | `GET` | `/saf_v7_files.json` |
+| Podgląd | `GET` | `/saf_v7_files/{id}.json` |
+| Oznacz jako zapłacony | `POST` | `/saf_v7_files/{id}/paid.json` |
+
+### Podatek VAT-UE
+
+**Scope:** `api:accounting:read`
+
+| Operacja | Metoda | Endpoint |
+|---|---|---|
+| Listowanie | `GET` | `/vat_eu_taxes.json` |
+| Podgląd | `GET` | `/vat_eu_taxes/{id}.json` |
+
+### Podatek dochodowy
+
+**Scope:** `api:accounting:read`, `api:accounting:write`
+
+| Operacja | Metoda | Endpoint |
+|---|---|---|
+| Listowanie | `GET` | `/income_taxes.json` |
+| Podgląd | `GET` | `/income_taxes/{id}.json` |
+| Oznacz jako zapłacony | `POST` | `/income_taxes/{id}/paid.json` |
+
+### Księga przychodów i rozchodów
+
+**Scope:** `api:accounting:read`
+
+| Operacja | Metoda | Endpoint |
+|---|---|---|
+| Listowanie | `GET` | `/books.json` |
+| Podgląd | `GET` | `/books/{id}.json` |
+
+### Składki ZUS
+
+**Scope:** `api:accounting:read`, `api:accounting:write`
+
+| Operacja | Metoda | Endpoint |
+|---|---|---|
+| Listowanie | `GET` | `/insurance_fees.json` |
+| Podgląd | `GET` | `/insurance_fees/{id}.json` |
+| Oznacz jako zapłacone | `POST` | `/insurance_fees/{id}/paid.json` |
+
+### Koszyk płatności za podatki
+
+**Scope:** `api:accounting:write`
+
+| Operacja | Metoda | Endpoint |
+|---|---|---|
+| Wygeneruj link do płatności | `POST` | `/payments/document_requests.json` |
+
+---
+
+## Dane referencyjne
+
+| Zasób | Endpoint | Scope | Operacje |
+|---|---|---|---|
+| Stawki VAT | `/vat_rates.json` | `api:invoices:read` | `GET` — listowanie |
+| Stawki VAT dla OSS | `/moss_vat_rates.json` | `api:invoices:read` | `GET` — listowanie |
+| Podstawy zwolnień z VAT | `/vat_exemptions.json`, `/{id}.json`, `/selected.json` | `api:invoices:read` | `GET` — listowanie, podgląd, wybrane |
+| Stawki ryczałtu ewidencjonowanego | `/flat_rates.json` | `api:invoices:read` | `GET` — listowanie |
+| Kody GTU | `/gtus.json`, `/gtus/{id}.json`, `/gtus/selected.json` | `api:invoices:read` | `GET` — listowanie, podgląd, wybrane |
+| Oznaczenia dokumentów przychodowych | `/documents_markings/incomes.json`, `/{id}.json`, `/selected.json` | `api:invoices:read` | `GET` — listowanie, podgląd, wybrane |
+| Rodzaje transakcji | `/transaction_kinds.json` | `api:invoices:read` | `GET` — listowanie |
+| Kraje | `/countries.json` | `api:invoices:read` | `GET` — listowanie |
+
+---
+
+## Dane użytkownika
+
+| Operacja | Metoda | Endpoint |
+|---|---|---|
+| Szczegóły konta | `GET` | `/account/details.json` |
+| Historia zdarzeń | `GET` | `/account/activities.json` |
+
+---
+
+## KSeF (e-Faktury)
+
+Pełna dokumentacja integracji z Krajowym Systemem e-Faktur dostępna w pliku **[ksef.md](ksef.md)**.
+
+**Scopes:** `api:ksef:integration:write`, `api:invoices:write`, `api:invoices:read`
+
 ---
 
 ## Metody płatności
@@ -270,17 +938,19 @@ Format: `/invoices.json?q[PARAMETR_modyfikator]=WARTOŚĆ`
 GET /api/v3/invoices.json?q[number_eq]=1/09/2024
 
 # Wyszukaj klienta po NIP
-curl -H "X-inFakt-ApiKey: KLUCZ" \
-  -H "Content-Type: application/json" \
-  -X GET \
-  -d '{"q": {"nip_eq": "1234567890"}}' \
-  https://api.infakt.pl/api/v3/clients.json
+GET /api/v3/clients.json?q[nip_eq]=1234567890
 
 # Faktury bez daty opłacenia
 GET /api/v3/invoices.json?q[paid_date_null]=true
 
 # Faktury wystawione po dacie
 GET /api/v3/invoices.json?q[invoice_date_gteq]=2024-01-01
+
+# Produkt po nazwie
+GET /api/v3/products.json?q[name_eq]=Usługa
+
+# Konto bankowe po numerze
+GET /api/v3/bank_accounts.json?q[account_number_eq]=PL61109010140000071219812874
 ```
 
 ---
@@ -329,143 +999,8 @@ Parametr `fields` określa które pola zwrócić:
 
 ```bash
 GET /api/v3/invoices.json?fields=number,services(name,tax_symbol)
-GET /api/v3/bank_accounts.json?fields=bank_name
-```
-
----
-
-## Zarządzanie klientami
-
-### Stwórz klienta
-
-```bash
-curl -H "X-inFakt-ApiKey: KLUCZ" \
-  -H "Content-Type: application/json" \
-  -X POST \
-  -d '{"client":{
-    "company_name": "Nowa Firma Sp. z o.o.",
-    "nip": "1234567890",
-    "street": "Główna",
-    "street_number": "10",
-    "city": "Kraków",
-    "postal_code": "30-001",
-    "country": "PL",
-    "payment_method": "transfer",
-    "days_to_payment": 14
-  }}' \
-  https://api.infakt.pl/api/v3/clients.json
-```
-
-### Edytuj klienta
-
-```bash
-curl -H "X-inFakt-ApiKey: KLUCZ" \
-  -H "Content-Type: application/json" \
-  -X PUT \
-  -d '{"client":{"company_name":"Zmieniona Nazwa Sp. z o.o."}}' \
-  https://api.infakt.pl/api/v3/clients/1.json
-```
-
-### Definicja klienta
-
-| Pole | Typ | Opis |
-|---|---|---|
-| `id` | integer | ID klienta (readonly) |
-| `company_name` | string | Nazwa firmy |
-| `first_name` | string | Imię |
-| `last_name` | string | Nazwisko |
-| `nip` | string | NIP |
-| `street`, `street_number`, `flat_number` | string | Adres |
-| `city`, `postal_code` | string | Miasto i kod (NN-NNN) |
-| `country` | string | Kod Alpha-2 (wymagane) |
-| `email` | string | Email |
-| `phone_number` | string | Telefon |
-| `web_site` | string | Strona WWW |
-| `payment_method` | string | Domyślna metoda płatności |
-| `days_to_payment` | integer | Termin płatności w dniach |
-| `business_activity_kind` | string | `private_person`, `self_employed`, `other_business` |
-| `receiver` | string | Odbierający dokument |
-| `invoice_note` | string | Domyślne uwagi do faktur |
-| `note` | string | Uwagi o kliencie |
-| `same_forward_address` | boolean | Adres koresp. = firmowy (domyślnie true) |
-| `mailing_company_name` | string | Nazwa firmy do korespondencji |
-| `mailing_street` | string | Ulica korespondencyjna |
-| `mailing_city` | string | Miasto korespondencyjne |
-| `mailing_postal_code` | string | Kod korespondencyjny |
-
----
-
-## Faktura korygująca
-
-```bash
-POST /api/v3/async/corrective_invoices.json
-```
-
-Dodatkowe pola:
-
-| Pole | Typ | Opis |
-|---|---|---|
-| `corrected_invoice_number` | string | Numer faktury korygowanej |
-| `corrected_invoice_date` | date | Data faktury korygowanej |
-| `correction_reason` | string | `mistake` lub `other` |
-| `confirmation` | boolean | Otrzymano podpisaną fakturę |
-| `confirmation_date` | date | Data podpisania |
-
----
-
-## Faktura marża
-
-```bash
-POST /api/v3/async/margin_invoices.json
-```
-
-| Pole | Typ | Opis |
-|---|---|---|
-| `margin_kind` | string | Procedura marży (wymagane) |
-| `gross_price` | integer | Brutto łącznie z marżą w groszach |
-| `margin_amount_price` | integer | Marża w groszach |
-
-Procedury marży (`margin_kind`):
-- `second_hand_goods` — towary używane
-- `travel_agencies` — biura podróży
-- `works_of_art` — dzieła sztuki
-- `collectables_and_antiques` — przedmioty kolekcjonerskie
-
----
-
-## Faktura zaliczkowa
-
-```bash
-POST /api/v3/async/advance_invoices.json
-```
-
-| Pole | Typ | Opis |
-|---|---|---|
-| `advance_date` | date | Data otrzymania zaliczki |
-| `advance_price` | integer | Wpłacona zaliczka w groszach |
-| `previous_advance_id` | integer | ID poprzedniej zaliczki |
-| `previous_advances` | array | Lista poprzednich zaliczek (readonly) |
-
----
-
-## Odbiorca JST (Jednostka Samorządu Terytorialnego)
-
-Przy fakturach dla JST można podać adres odbiorcy:
-
-```json
-{
-  "invoice": {
-    "local_government_recipient_address": {
-      "company_name": "Urząd Miejski Krakowa",
-      "nip": "1060006024",
-      "street": "Plac Wszystkich Świętych",
-      "street_number": "3-4",
-      "postal_code": "31-004",
-      "city": "Kraków",
-      "country": "PL"
-    }
-  }
-}
+GET /api/v3/bank_accounts.json?fields=bank_name,account_number
+GET /api/v3/products.json?fields=name,unit_net_price
 ```
 
 ---
@@ -520,12 +1055,6 @@ inFakt obsługuje webhooki do powiadamiania o zdarzeniach (np. utworzenie faktur
 
 Konfiguracja: [Instrukcja dodania webhooka](https://pomoc.infakt.pl/hc/pl/articles/1460299772801)
 Aktywacja: [Instrukcja aktywacji](https://pomoc.infakt.pl/hc/pl/articles/14603458812818)
-
----
-
-## KSeF 2.0 (e-Faktury)
-
-Pełna dokumentacja integracji z Krajowym Systemem e-Faktur dostępna w pliku **[ksef.md](ksef.md)**.
 
 ---
 

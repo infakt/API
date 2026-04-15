@@ -1,31 +1,40 @@
-# KSeF 2.0 (e-Faktury) — Integracja z inFakt API v3
+# KSeF (e-Faktury) — Integracja z inFakt API v3
 
 ## Wstęp
 
-Krajowy System e-Faktur (KSeF) to obowiązkowy system elektronicznego fakturowania w Polsce uruchomiony 1 lutego 2026. inFakt API v3 zapewnia pełną integrację z KSeF 2.0, umożliwiając:
+Krajowy System e-Faktur (KSeF) to obowiązkowy system elektronicznego fakturowania w Polsce. inFakt API v3 zapewnia integrację z KSeF przez dwa namespace'y:
 
+- **`/ksef/`** — pełne zarządzanie integracją (tworzenie, usuwanie, sprawdzanie statusu) oraz wysyłka/import faktur
+- **`/ksef2/`** — endpointy KSeF 2.0 (onboarding przez kis-app, tylko odczyt statusu integracji, wysyłka/import faktur, anulowanie eksportu)
+
+Możliwości API:
 - Wysyłanie faktur do KSeF
 - Sprawdzanie statusu przetwarzania
 - Pobieranie faktur w formacie XML/PDF/HTML
 - Import faktur przychodowych i kosztowych z KSeF
-- Zarządzanie integracją (token autoryzacyjny)
+- Zarządzanie integracją (token autoryzacyjny — tylko `/ksef/`)
 
-**Wymagany scope:** `api:ksef:integration:write`
+**Wymagane scopes:**
+- Zarządzanie integracją (`/ksef/`): `api:ksef:integration:write`
+- Status integracji (`/ksef2/`): `api:invoices:read`
+- Wysyłka faktur do KSeF: `api:invoices:write`
+- Pobieranie XML / import: `api:invoices:read`
 
 ---
 
 ## Spis treści
 
 1. [Integracja — zarządzanie połączeniem](#integracja)
-2. [Wysyłka faktur do KSeF](#wysyłka-faktur)
-3. [Sprawdzanie statusu](#sprawdzanie-statusu)
-4. [Pobieranie XML faktury](#pobieranie-xml)
-5. [Import faktur z KSeF](#import-faktur)
-6. [Obiekt ksef_data](#obiekt-ksef_data)
-7. [Obsługiwane typy faktur](#obsługiwane-typy-faktur)
-8. [Wysyłka przez endpoint zasobu](#wysyłka-przez-endpoint-zasobu)
-9. [Obsługa błędów](#obsługa-błędów)
-10. [Migracja do KSeF 2.0](#migracja-do-ksef-20)
+2. [KSeF 2.0 — różnice](#ksef-20--różnice)
+3. [Wysyłka faktur do KSeF](#wysyłka-faktur)
+4. [Sprawdzanie statusu](#sprawdzanie-statusu)
+5. [Pobieranie XML faktury](#pobieranie-xml)
+6. [Import faktur z KSeF](#import-faktur)
+7. [Obiekt ksef_data](#obiekt-ksef_data)
+8. [Obsługiwane typy faktur](#obsługiwane-typy-faktur)
+9. [Wysyłka przez endpoint zasobu](#wysyłka-przez-endpoint-zasobu)
+10. [Obsługa błędów](#obsługa-błędów)
+11. [Migracja do KSeF](#migracja-do-ksef)
 
 ---
 
@@ -75,15 +84,18 @@ curl -H "X-inFakt-ApiKey: KLUCZ" \
   https://api.infakt.pl/api/v3/ksef/integration.json
 ```
 
-**Token** generuje się w aplikacji Ministerstwa Finansów (ksef.mf.gov.pl) i musi odpowiadać NIP-owi użytkownika w inFakt.
+**Token** generuje się w aplikacji Ministerstwa Finansów ([ksef.mf.gov.pl](https://ksef.mf.gov.pl/web/login)) — logowanie profilem zaufanym, podpisem kwalifikowanym lub pieczęcią kwalifikowaną. Następnie należy przejść do opcji wygenerowania tokena autoryzacyjnego i nadać uprawnienia do odczytu i zapisu faktur.
+
+Token musi być wygenerowany na ten sam NIP, który jest wpisany w danych firmowych na koncie inFakt. inFakt wykona testowe zapytanie do KSeF — jeżeli zakończy się sukcesem, integracja jest potwierdzona.
+
+> Jeżeli konto jest już zintegrowane z KSeF, należy najpierw usunąć bieżącą integrację przed wprowadzeniem nowej (w przeciwnym razie zwracany jest błąd 422).
 
 **Odpowiedź sukces (201):**
 
 ```json
 {
   "active": true,
-  "incomes_last_fetched_at": null,
-  "costs_last_fetched_at": null
+  "changed_at": "2024-01-15 10:00:00 +0100"
 }
 ```
 
@@ -103,6 +115,32 @@ DELETE /api/v3/ksef/integration.json
 
 > Usunięcie integracji następuje tylko po stronie inFakt. Token dalej pozostaje ważny w aplikacji MF. Aby trwale usunąć token, zaloguj się w aplikacji MF → Tokeny → usuń wybrany token.
 
+> **Uwaga:** Endpointy `POST` i `DELETE` dla `/ksef/integration.json` dotyczą wyłącznie namespace'u `/ksef/` (legacy). W `/ksef2/` onboarding integracji odbywa się przez kis-app, a nie przez API.
+
+---
+
+## KSeF 2.0 — różnice
+
+Namespace `/ksef2/` to implementacja KSeF 2.0, która różni się od legacy `/ksef/`:
+
+| Funkcja | `/ksef/` | `/ksef2/` |
+|---|---|---|
+| Sprawdź status integracji | `GET /ksef/integration.json` | `GET /ksef2/integration.json` |
+| Utwórz integrację | `POST /ksef/integration.json` | Brak — onboarding przez kis-app |
+| Usuń integrację | `DELETE /ksef/integration.json` | Brak — zarządzanie przez kis-app |
+| Wyślij fakturę | `POST /ksef/documents/{uuid}/send.json` | `POST /ksef2/documents/{uuid}/send.json` |
+| Wyślij wiele faktur | `POST /ksef/documents/send.json` | `POST /ksef2/documents/send.json` |
+| Status wysyłki | `GET /ksef/documents/{uuid}/status.json` | `GET /ksef2/documents/{uuid}/status.json` |
+| Pobierz XML | `GET /ksef/documents/{uuid}/download_xml.json` | `GET /ksef2/documents/{uuid}/download_xml.json` |
+| Import przychodowych | `GET /ksef/import/incomes.json` | `GET /ksef2/import/incomes.json` |
+| Import kosztowych | `GET /ksef/import/costs.json` | `GET /ksef2/import/costs.json` |
+| Import pojedynczej | `GET /ksef/import/{ksef_number}.json` | `GET /ksef2/import/{ksef_number}.json` |
+| Anuluj eksport | Brak | `POST /ksef2/cancel_export.json` |
+
+**Wymagane scopy dla `/ksef2/integration.json`:** `api:invoices:read` (nie `api:ksef:integration:write`).
+
+Pozostałe endpointy `/ksef2/` działają identycznie jak `/ksef/` — różnica leży w sposobie integracji (onboarding) i wewnętrznym routingu do kis-app.
+
 ---
 
 ## Wysyłka faktur
@@ -113,7 +151,14 @@ DELETE /api/v3/ksef/integration.json
 POST /api/v3/ksef/documents/{document_uuid}/send.json
 ```
 
-`document_uuid` to UUID dokumentu przychodowego w inFakt (faktura VAT, korygująca, marża, zaliczkowa lub końcowa).
+`document_uuid` to UUID dokumentu przychodowego w inFakt (faktura VAT, korygująca, marża, zaliczkowa lub końcowa). Można go pozyskać odpytując końcówkę danego zasobu z listą dokumentów.
+
+Wysyłka odbywa się asynchronicznie. Status można zweryfikować:
+- dedykowaną końcówką: `GET /api/v3/ksef/documents/{document_uuid}/status.json`
+- węzłem `ksef_data` na podglądzie faktury
+- webhookiem powiadamiającym o finalnym statusie (sukces/błąd)
+
+Użytkownik musi być zintegrowany z KSeF, w innym wypadku zwracany jest kod 422.
 
 **Przykład:**
 
@@ -140,20 +185,19 @@ curl -H "X-inFakt-ApiKey: KLUCZ" \
 }
 ```
 
-**Odpowiedź błąd — nie można wysłać (200):**
+**Odpowiedź błąd — brak integracji (422):**
 
 ```json
 {
-  "request_uuid": null,
-  "invoice_uuid": "88afc9f7-ae2d-4534-9e74-e813aed9439b",
-  "invoice_kind": "vat",
-  "ksef_number": null,
-  "status": "rejected",
-  "status_description": "Faktura nie może zostać wysłana do KSeF.",
-  "timestamps": {
-    "request_created_at": "2024-01-15 16:05:00 +0100",
-    "request_finished_at": null
-  }
+  "error": "Użytkownik nie jest zintegrowany z KSeF."
+}
+```
+
+**Odpowiedź błąd — nie znaleziono faktury (404):**
+
+```json
+{
+  "error": "Zasób którego szukasz nie został znaleziony."
 }
 ```
 
@@ -177,7 +221,28 @@ POST /api/v3/ksef/documents/send.json
 
 ### Wysyłka z powiadomieniem klienta
 
-Przy wysyłce przez endpoint `/invoices/{uuid}/send_to_ksef.json` można dodać informacje o powiadomieniu klienta (body JSON z parametrami powiadomienia).
+Przy wysyłce przez endpoint `/invoices/{uuid}/send_to_ksef.json` można jednocześnie wysłać powiadomienie emailem do klienta. Wysłanie emailem zmienia status faktury na „Wysłano".
+
+```json
+{
+  "inform_via_email": {
+    "print_type": "copy",
+    "recipient": "klient@example.com",
+    "locale": "pl",
+    "send_copy": false,
+    "content": "Treść wiadomości email"
+  }
+}
+```
+
+| Parametr | Typ | Wymagany | Opis |
+|---|---|---|---|
+| `inform_via_email` | object | Tak | Zawiera dane powiadomienia |
+| `print_type` | string | Tak | `original`, `copy`, `original_duplicate`, `copy_duplicate`, `duplicate`, `regular` |
+| `locale` | string | Nie | `pl`, `en`, `pe` |
+| `recipient` | string | Nie | Email odbiorcy |
+| `send_copy` | boolean | Nie | Czy wysłać kopię do właściciela konta |
+| `content` | string | Nie | Treść wiadomości email |
 
 ---
 
@@ -187,14 +252,15 @@ Przy wysyłce przez endpoint `/invoices/{uuid}/send_to_ksef.json` można dodać 
 GET /api/v3/ksef/documents/{document_uuid}/status.json
 ```
 
-### Możliwe statusy
+### Możliwe statusy przetwarzania
 
 | Status | Opis |
 |---|---|
-| `sent` | Faktura wysłana do przetworzenia (status początkowy) |
-| `success` | Poprawnie przetworzona, nadano `ksef_number` |
-| `error` | Nie przetworzona, szczegóły w `status_description` |
-| `rejected` | Faktura nie może zostać wysłana |
+| `sent` | Faktura wysłana do przetworzenia w KSeF (status początkowy) |
+| `success` | Poprawnie przetworzona w KSeF, nadano `ksef_number` |
+| `error` | Nie przetworzona w KSeF, szczegóły błędu w `status_description` |
+
+> Zachęcamy do skonfigurowania webhooka, który poinformuje o zmianie statusu przetwarzania na końcowy — ograniczy to ilość zbędnych zapytań do endpointu `status.json`.
 
 ### Odpowiedź — w trakcie przetwarzania
 
@@ -257,6 +323,8 @@ GET /api/v3/ksef/documents/{document_uuid}/status.json
 GET /api/v3/ksef/documents/{document_uuid}/download_xml.json
 ```
 
+`document_uuid` — UUID dokumentu w inFakt.
+
 ### Pobierz XML przez endpoint zasobu
 
 ```bash
@@ -298,8 +366,8 @@ GET /api/v3/ksef/import/costs.json
 | `offset` | Przesunięcie (stronicowanie) |
 | `limit` | Liczba wyników (max 100) |
 | `order` | Sortowanie, np. `invoice_date desc` |
-| `q[invoice_date_lteq]` | Faktury z datą wystawienia <= |
 | `q[invoice_date_gteq]` | Faktury z datą wystawienia >= |
+| `q[invoice_date_lteq]` | Faktury z datą wystawienia <= |
 
 ### Przykłady
 
@@ -324,6 +392,11 @@ GET /api/v3/ksef/import/incomes.json?q[invoice_date_lteq]=2024-06-01
   },
   "entities": [
     {
+      "client_name": "Magda Krakowska",
+      "client_tax_code": "3423016760",
+      "created_at": "2024-08-23T07:06:08.407Z",
+      "currency": "PLN",
+      "gross_price": 12300,
       "invoice_date": "2024-09-29",
       "invoice_kind": "vat",
       "invoice_number": "2/09/2024",
@@ -337,6 +410,23 @@ GET /api/v3/ksef/import/incomes.json?q[invoice_date_lteq]=2024-06-01
   ]
 }
 ```
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `client_name` | string | Nazwa nabywcy |
+| `client_tax_code` | string | NIP nabywcy |
+| `created_at` | datetime | Data pobrania do inFakt |
+| `currency` | string | Waluta faktury |
+| `gross_price` | integer | Kwota brutto w groszach |
+| `invoice_date` | string | Data wystawienia |
+| `invoice_kind` | string | Typ faktury |
+| `invoice_number` | string | Numer faktury |
+| `ksef_number` | string | Numer nadany w KSeF |
+| `net_price` | integer | Kwota netto w groszach |
+| `schema_version` | string | Wersja schematu XML (np. `V1`, `V2`) |
+| `seller_name` | string | Nazwa sprzedawcy |
+| `seller_tax_code` | string | NIP sprzedawcy |
+| `tax_price` | integer | Kwota VAT w groszach |
 
 ### Import pojedynczej faktury
 
@@ -367,8 +457,6 @@ Każda faktura (VAT, korygująca, marża, zaliczkowa, końcowa) zawiera pole `ks
     "ksef_number": "7343521162-20231004-47A70D8BD670-57",
     "status": "success",
     "status_description": "Faktura została przetworzona.",
-    "invoice_kind": "vat",
-    "invoice_uuid": "0be870f9-aa52-4d0f-a9ff-994e374ecff0",
     "timestamps": {
       "request_created_at": "2024-01-15 16:00:00 +0100",
       "request_finished_at": "2024-01-15 16:01:30 +0100"
@@ -379,16 +467,16 @@ Każda faktura (VAT, korygująca, marża, zaliczkowa, końcowa) zawiera pole `ks
 
 | Pole | Typ | Opis |
 |---|---|---|
-| `request_uuid` | string | Unikalny numer zlecenia wysyłki w inFakt |
-| `ksef_number` | string | Numer faktury nadany przez KSeF |
+| `request_uuid` | string | Unikalny numer zlecenia wysyłki do KSeF w inFakt |
+| `ksef_number` | string | Unikalny numer faktury nadany przez KSeF |
 | `status` | string | `sent`, `success`, `error` |
 | `status_description` | string | Opis statusu przetwarzania |
-| `invoice_kind` | string | Typ faktury |
-| `invoice_uuid` | string | UUID faktury w inFakt |
-| `timestamps.request_created_at` | datetime | Data utworzenia zlecenia |
-| `timestamps.request_finished_at` | datetime | Data zakończenia przetwarzania |
+| `timestamps.request_created_at` | datetime | Data utworzenia zlecenia wysyłki do KSeF |
+| `timestamps.request_finished_at` | datetime | Data zakończenia przetwarzania w KSeF |
 
 Jeśli faktura nie była wysyłana do KSeF, `ksef_data` wynosi `null`.
+
+> **Uwaga:** Endpointy wysyłki (`send.json`, `send_to_ksef.json`) oraz statusu (`status.json`) zwracają rozszerzoną odpowiedź zawierającą dodatkowo pola `invoice_kind` i `invoice_uuid`. Te pola nie są częścią obiektu `ksef_data` przechowywanego na fakturze.
 
 ---
 
@@ -458,7 +546,7 @@ Przy błędach `429` / `503`:
 
 ---
 
-## Migracja do KSeF 2.0
+## Migracja do KSeF
 
 ### Checklist
 
@@ -478,10 +566,12 @@ Przy błędach `429` / `503`:
 
 ### Środowiska
 
-| Środowisko | API Endpoint | KSeF |
-|---|---|---|
-| Sandbox | `api.sandbox-infakt.pl/api/v3` | Demo KSeF (pre-produkcja) |
-| Produkcja | `api.infakt.pl/api/v3` | Produkcyjny KSeF |
+| Środowisko | API Endpoint | KSeF | Token |
+|---|---|---|---|
+| Sandbox | `api.sandbox-infakt.pl/api/v3` | Demo KSeF (pre-produkcja) | [ksef-test.mf.gov.pl](https://ksef-test.mf.gov.pl/web/login) |
+| Produkcja | `api.infakt.pl/api/v3` | Produkcyjny KSeF | [ksef.mf.gov.pl](https://ksef.mf.gov.pl/web/login) |
+
+> Na środowisku Sandbox należy zalogować się na `ksef-test.mf.gov.pl`, wpisać NIP `1111111111` i skorzystać z uwierzytelniania certyfikatem kwalifikowanym.
 
 ---
 
@@ -549,6 +639,6 @@ curl -H "X-inFakt-ApiKey: KLUCZ" \
 
 - Dokumentacja API inFakt: https://docs.infakt.pl
 - KSeF Portal MF: https://ksef.mf.gov.pl
-- KSeF Demo MF: https://ksef-demo.mf.gov.pl
+- KSeF Test MF: https://ksef-test.mf.gov.pl
 - Sandbox inFakt: https://konto.sandbox-infakt.pl/rejestracja
 - Schemat FA(2): Specyfikacja Ministerstwa Finansów
