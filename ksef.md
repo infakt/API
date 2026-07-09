@@ -347,16 +347,27 @@ Plik XML jest zgodny ze schematem FA(2) wymaganym przez KSeF.
 
 Import faktur pobiera dokumenty bezpośrednio z KSeF — nie muszą istnieć w inFakt.
 
+**Wymagany scope:** `api:invoices:read`
+
+**Limity:**
+
+| Operacja | Limit |
+|---|---|
+| Listowanie importu (`incomes`, `costs`) | **6 zapytań / godzinę** |
+| Pobieranie pojedynczej faktury | Obowiązują limity nakładane przez KSeF (MF) |
+
+Przekroczenie limitu listowania zwraca kod `429`.
+
 ### Import faktur przychodowych
 
 ```bash
-GET /api/v3/ksef/import/incomes.json
+GET /api/v3/ksef2/import/incomes.json
 ```
 
 ### Import faktur kosztowych
 
 ```bash
-GET /api/v3/ksef/import/costs.json
+GET /api/v3/ksef2/import/costs.json
 ```
 
 ### Parametry (wspólne)
@@ -373,22 +384,25 @@ GET /api/v3/ksef/import/costs.json
 
 ```bash
 # Ze stronicowaniem
-GET /api/v3/ksef/import/incomes.json?offset=0&limit=25
+GET /api/v3/ksef2/import/incomes.json?offset=0&limit=25
 
 # Sortowanie po dacie malejąco
-GET /api/v3/ksef/import/incomes.json?order=invoice_date desc
+GET /api/v3/ksef2/import/incomes.json?order=invoice_date desc
 
-# Faktury z datą przed 1 czerwca 2024
-GET /api/v3/ksef/import/incomes.json?q[invoice_date_lteq]=2024-06-01
+# Faktury z datą od 1 czerwca 2024
+GET /api/v3/ksef2/import/incomes.json?q[invoice_date_gteq]=2024-06-01
 ```
 
 ### Odpowiedź
+
+Odpowiedź listowania zawiera `entities[]` oraz `metainfo` z polami `count`, `limit`, `offset`.
 
 ```json
 {
   "metainfo": {
     "count": 2,
-    "total_count": 15
+    "limit": 25,
+    "offset": 0
   },
   "entities": [
     {
@@ -431,18 +445,20 @@ GET /api/v3/ksef/import/incomes.json?q[invoice_date_lteq]=2024-06-01
 ### Import pojedynczej faktury
 
 ```bash
-GET /api/v3/ksef/import/{ksef_number}.json
-GET /api/v3/ksef/import/{ksef_number}.json?file_format=pdf
-GET /api/v3/ksef/import/{ksef_number}.json?file_format=html
+GET /api/v3/ksef2/import/{ksef_number}.json
+GET /api/v3/ksef2/import/{ksef_number}.json?file_format=pdf
+GET /api/v3/ksef2/import/{ksef_number}.json?file_format=html
 ```
 
-| Format | Opis |
-|---|---|
-| `xml` | Plik XML (domyślnie) |
-| `pdf` | Plik PDF |
-| `html` | Plik HTML |
+| `file_format` | Opis | Content-Type odpowiedzi |
+|---|---|---|
+| `xml` | Plik XML (domyślnie) | `application/xml` |
+| `pdf` | Plik PDF | `application/pdf` |
+| `html` | Plik HTML | `text/html` |
 
 Faktura nie musi istnieć w inFakt. `ksef_number` pozyskuje się z listy importu.
+
+**Błędy (422):** m.in. brak aktywnej integracji z KSeF, nieprawidłowy `ksef_number` lub nieobsługiwana wartość `file_format`.
 
 ---
 

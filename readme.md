@@ -20,7 +20,6 @@ Pełna dokumentacja interaktywna: https://docs.infakt.pl
   - [Faktury VAT](#faktury-vat)
     - [Typy faktur](#typy-faktur)
     - [Tworzenie faktury (asynchroniczne)](#tworzenie-faktury-asynchroniczne)
-    - [Tworzenie faktury (synchroniczne)](#tworzenie-faktury-synchroniczne)
     - [Sprawdzenie statusu tworzenia](#sprawdzenie-statusu-tworzenia)
     - [Listowanie faktur](#listowanie-faktur)
     - [Podgląd faktury](#podgląd-faktury)
@@ -36,7 +35,9 @@ Pełna dokumentacja interaktywna: https://docs.infakt.pl
     - [Szybkie płatności](#szybkie-płatności)
     - [Definicja faktury VAT](#definicja-faktury-vat)
     - [Definicja pozycji (Service)](#definicja-pozycji-service)
-    - [Odbiorca JST](#odbiorca-jst-jednostka-samorządu-terytorialnego)
+    - [Podmioty trzecie (ThirdPartyAddress)](#podmioty-trzecie-thirdpartyaddress)
+    - [Warunki transakcji (transaction_terms)](#warunki-transakcji-transaction_terms)
+    - [Adresy JST](#adresy-jst-jednostka-samorządu-terytorialnego)
   - [Faktury korygujące VAT](#faktura-korygująca)
   - [Faktury marża](#faktura-marża)
   - [Faktury zaliczkowe](#faktura-zaliczkowa)
@@ -398,20 +399,23 @@ Link umożliwia podgląd faktury, drukowanie, import jako koszt i opłacenie prz
 | Pole | Typ | Opis |
 |---|---|---|
 | `id` | integer | ID faktury (readonly) |
+| `uuid` | string | UUID faktury (readonly) |
+| `parent_id` | integer | ID dokumentu powiązanego (readonly) |
 | `number` | string | Numer faktury (auto-generowany) |
 | `currency` | string | Waluta (domyślnie PLN) |
-| `kind` | string | `vat` lub `proforma` |
+| `kind` | string | `vat` (readonly) |
 | `payment_method` | string | Metoda płatności |
 | `invoice_date` | date | Data wystawienia (RRRR-MM-DD) |
 | `sale_date` | date | Data sprzedaży |
 | `payment_date` | date | Termin zapłaty |
 | `paid_date` | date | Data opłacenia |
-| `status` | string | `draft`, `sent`, `printed`, `paid` (readonly) |
+| `status` | string | `draft`, `sent`, `printed`, `paid` — można ustawiać przy zapisie |
 | `net_price` | integer | Netto w groszach (readonly) |
 | `tax_price` | integer | VAT w groszach (readonly) |
 | `gross_price` | integer | Brutto w groszach (readonly) |
 | `left_to_pay` | integer | Pozostało do zapłaty w groszach |
 | `client_id` | integer | ID istniejącego klienta |
+| `client_uuid` | string | UUID klienta (readonly) |
 | `client_company_name` | string | Nazwa firmy (jeśli brak client_id) |
 | `client_tax_code` | string | NIP klienta |
 | `client_country` | string | Kraj klienta (Alpha-2) |
@@ -424,17 +428,30 @@ Link umożliwia podgląd faktury, drukowanie, import jako koszt i opłacenie prz
 | `bank_name` | string | Nazwa banku |
 | `bank_account` | string | Numer konta bankowego |
 | `swift` | string | Numer SWIFT |
+| `split_payment` | boolean | Mechanizm podzielonej płatności |
 | `split_payment_type` | string | `required` lub `optional` |
 | `notes` | string | Uwagi |
-| `invoice_date_kind` | string | `sale_date`, `service_date`, `cargo_date`, `continuous_date_end_on` |
+| `invoice_date_kind` | string | `sale_date`, `service_date`, `cargo_date`, `continuous_service_end_on` |
 | `continuous_service_start_on` | date | Początek usługi ciągłej |
 | `continuous_service_end_on` | date | Koniec usługi ciągłej |
 | `sale_type` | string | `service` lub `merchandise` (dla zagranicznych) |
+| `sales_kind` | string | Rodzaj sprzedaży (zapis możliwy) |
+| `building_service` | boolean | Usługa budowlana |
+| `occasional_sale` | boolean | Okazjonalna sprzedaż (przeniesione z Service) |
+| `vat_date_value` | string | Data dla celów VAT: `issue_date`, `sale_date`, `paid_date` (przeniesione z Service) |
 | `vat_exemption_reason` | integer | ID podstawy zwolnienia z VAT |
 | `bdo_code` | string | Numer rejestrowy BDO |
 | `document_markings_ids` | array | ID oznaczeń dokumentów |
 | `receipt_number` | string | Numer paragonu |
 | `check_duplicate_number` | boolean | Sprawdzanie duplikacji numeru |
+| `third_party_addresses` | array | Podmioty trzecie — patrz [ThirdPartyAddress](#podmioty-trzecie-thirdpartyaddress) |
+| `transaction_terms` | object | Warunki transakcji — patrz [transaction_terms](#warunki-transakcji-transaction_terms) |
+| `local_government_recipient_address` | object | Adres odbiorcy JST — patrz [Adresy JST](#adresy-jst-jednostka-samorządu-terytorialnego) |
+| `local_government_seller_address` | object | Adres sprzedawcy JST (zapis możliwy) |
+| `amount_in_words` | string | Kwota słownie (readonly) |
+| `reconciliation_id` | integer | ID uzgodnienia (readonly) |
+| `related_documents` | array | Dokumenty powiązane (readonly) |
+| `ksef_number` | string | Numer KSeF faktury (readonly) |
 | `ksef_data` | object | Dane KSeF (readonly) |
 | `created_at` | datetime | Data stworzenia (readonly) |
 
@@ -442,8 +459,10 @@ Link umożliwia podgląd faktury, drukowanie, import jako koszt i opłacenie prz
 
 | Pole | Typ | Opis |
 |---|---|---|
+| `id` | integer | ID pozycji (readonly) |
+| `related_id` | integer | ID pozycji powiązanej (readonly) |
 | `name` | string | Nazwa pozycji (wymagane) |
-| `tax_symbol` | string | Stawka VAT |
+| `tax_symbol` | string | Stawka VAT (wymagane) |
 | `unit` | string | Jednostka |
 | `quantity` | number | Ilość |
 | `unit_net_price` | integer | Cena netto/szt. w groszach |
@@ -453,11 +472,11 @@ Link umożliwia podgląd faktury, drukowanie, import jako koszt i opłacenie prz
 | `pkwiu` | string | PKWiU |
 | `cn` | string | CN |
 | `pkob` | string | PKOB |
+| `gtin` | string | Kod GTIN |
 | `gtu_id` | integer | ID kodu GTU |
 | `discount` | integer | Rabat w procentach |
 | `unit_net_price_before_discount` | integer | Cena przed rabatem w groszach |
 | `flat_rate_tax_symbol` | string | Stawka ryczałtu |
-| `vat_date_value` | string | Data dla celów VAT: `issue_date`, `sale_date`, `paid_date` |
 
 > **Uwaga:** Aby wystawić fakturę od brutto, podaj `gross_price` bez `unit_net_price`/`net_price`. System wyliczy wartości netto.
 
@@ -469,15 +488,30 @@ Link umożliwia podgląd faktury, drukowanie, import jako koszt i opłacenie prz
 POST /api/v3/async/corrective_invoices.json
 ```
 
-Dodatkowe pola:
+Dodatkowe pola (poza polami wspólnymi z fakturą VAT, w tym `uuid`, `client_uuid`, `third_party_addresses`, `ksef_number`, `amount_in_words`):
 
 | Pole | Typ | Opis |
 |---|---|---|
+| `kind` | string | `correction` (readonly) |
 | `corrected_invoice_number` | string | Numer faktury korygowanej |
 | `corrected_invoice_date` | date | Data faktury korygowanej |
-| `correction_reason` | string | `mistake` lub `other` |
+| `corrected_invoice_uuid` | string | UUID faktury korygowanej |
+| `corrected_invoice_gross_price` | integer | Brutto faktury korygowanej w groszach (readonly) |
+| `correction_reason` | string | Zapis: symbol powodu; odczyt: polska nazwa |
+| `correction_reason_symbol` | string | Symbol powodu korekty (readonly) |
+| `check_correction_obligation` | boolean | Weryfikacja obowiązku korekty |
+| `sale_date_before_correction` | date | Data sprzedaży przed korektą |
+| `continuous_service_start_on_before_correction` | date | Początek okresu usługi ciągłej przed korektą |
+| `continuous_service_end_on_before_correction` | date | Koniec okresu usługi ciągłej przed korektą (przy `invoice_date_kind` = `continuous_service_end_on`, zamiast `sale_date_before_correction`) |
 | `confirmation` | boolean | Otrzymano podpisaną fakturę |
 | `confirmation_date` | date | Data podpisania |
+| `paid_date` | date | Data opłacenia |
+
+**Korekta daty vs korekta pozycji:**
+
+- Nie można jednocześnie korygować daty sprzedaży (okresu usługi ciągłej) i pozycji (`services`).
+- Wartości `*_before_correction` muszą odpowiadać datom faktury korygowanej.
+- Pozycje korygowane przekazuje się parami po 2 na `group`: pozycja z `correction: false` (stan przed korektą) i pozycja z `correction: true` (stan po korekcie).
 
 ### Faktura marża
 
@@ -487,15 +521,23 @@ POST /api/v3/async/margin_invoices.json
 
 | Pole | Typ | Opis |
 |---|---|---|
-| `margin_kind` | string | Procedura marży (wymagane) |
+| `kind` | string | `margin` (readonly) |
+| `margin_kind` | string | Procedura marży (wymagane). Zapis: symbol; odczyt: polska nazwa |
+| `margin_kind_symbol` | string | Symbol procedury marży (readonly) |
+| `margin_kind_id` | integer | ID procedury marży (readonly) |
 | `gross_price` | integer | Brutto łącznie z marżą w groszach |
 | `margin_amount_price` | integer | Marża w groszach |
+| `vat_exchange_date_kind` | string | Rodzaj daty kursu — wymagane przy walucie obcej |
 
-Procedury marży (`margin_kind`):
+Faktura marża obsługuje też pola wspólne z fakturą VAT, m.in. `uuid`, `client_uuid`, `paid_date`, `sales_kind`, `occasional_sale`, `building_service`, `vat_date_value`, `third_party_addresses`, `transaction_terms`, `local_government_recipient_address`, `ksef_number`, `amount_in_words`.
+
+Procedury marży (`margin_kind` — symbole do zapisu):
 - `second_hand_goods` — towary używane
 - `travel_agencies` — biura podróży
 - `works_of_art` — dzieła sztuki
 - `collectables_and_antiques` — przedmioty kolekcjonerskie
+
+Pozycje (Services) faktury marży nie zawierają `tax_symbol`, `pkwiu`, `cn` ani `pkob`; dostępne są `margin_amount_price` i `gross_with_margin_amount_price`.
 
 ### Faktura zaliczkowa
 
@@ -505,30 +547,152 @@ POST /api/v3/async/advance_invoices.json
 
 | Pole | Typ | Opis |
 |---|---|---|
+| `kind` | string | `advance` (readonly) |
 | `advance_date` | date | Data otrzymania zaliczki |
 | `advance_price` | integer | Wpłacona zaliczka w groszach |
 | `previous_advance_id` | integer | ID poprzedniej zaliczki |
 | `previous_advances` | array | Lista poprzednich zaliczek (readonly) |
+| `next_advances` | array | Lista kolejnych zaliczek (readonly) |
+| `parent_invoice_data` | object | Dane faktury nadrzędnej (readonly) |
+| `bank_id` | integer | ID konta bankowego |
+| `client_days_to_payment` | integer | Termin płatności klienta w dniach |
+| `client_notes` | string | Uwagi klienta |
 
-### Odbiorca JST (Jednostka Samorządu Terytorialnego)
+Zaliczka obsługuje też pola wspólne z fakturą VAT (m.in. `uuid`, `client_uuid`, `split_payment`, `split_payment_type`, `sales_kind`, `third_party_addresses`, `transaction_terms`, `local_government_recipient_address`, `ksef_number`, `amount_in_words`). Pole `invoice_date_kind` **nie występuje** na fakturze zaliczkowej. Operacje na zaliczce wykonuje się po `uuid` w URL.
 
-Przy fakturach dla JST można podać adres odbiorcy:
+### Faktura końcowa
+
+```bash
+POST /api/v3/async/final_invoices.json
+```
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `kind` | string | `final` (readonly) |
+| `previous_advance_id` | integer | ID rozliczanej zaliczki (wymagane) |
+| `previous_advances` | array | Lista rozliczanych zaliczek (readonly) |
+| `continuous_service_start_on` | date | Początek usługi ciągłej |
+| `continuous_service_end_on` | date | Koniec usługi ciągłej |
+| `exchange_rates_data` | object | Dane kursów walut (readonly) |
+| `bank_id` | integer | ID konta bankowego |
+| `client_days_to_payment` | integer | Termin płatności klienta w dniach |
+| `client_notes` | string | Uwagi klienta |
+
+Faktura końcowa obsługuje też pola wspólne z fakturą VAT: `uuid`, `client_uuid`, `split_payment` + `split_payment_type` (rozdzielone), `sales_kind`, `third_party_addresses`, `transaction_terms`, `local_government_recipient_address`, `ksef_number`, `amount_in_words`, `ksef_data`. Dla usługi ciągłej `invoice_date_kind` przyjmuje wartość `continuous_service_end_on`.
+
+### Podmioty trzecie (ThirdPartyAddress)
+
+Pole `third_party_addresses` (tablica) pozwala umieścić na fakturze dodatkowe podmioty (Podmiot3 wg schemy KSeF). Dostępne dla rodziny faktur: VAT, korygująca, marża, zaliczkowa, końcowa (nie dotyczy OSS).
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `id` | integer | ID wpisu (readonly; przy edycji identyfikuje istniejący wpis) |
+| `company_name` | string | Nazwa podmiotu (wymagane) |
+| `tax_id` | string | NIP podmiotu |
+| `street` | string | Ulica |
+| `building_number` | string | Nr budynku |
+| `door_number` | string | Nr lokalu |
+| `post_code` | string | Kod pocztowy |
+| `city` | string | Miasto |
+| `country_code` | string | Kraj (Alpha-2) |
+| `role_code` | string | Kod roli podmiotu (wymagane) — patrz tabela ról |
+| `internal_identifier` | string | Identyfikator wewnętrzny (format `NIP-XXXXX`) |
+| `_destroy` | boolean | Zapis: `true` usuwa wpis przy edycji |
+
+**Role podmiotu (`role_code`):**
+
+| Kod | Rola |
+|---|---|
+| `1` | Faktor |
+| `2` | Odbiorca |
+| `3` | Podmiot pierwotny |
+| `4` | Dodatkowy nabywca |
+| `5` | Wystawca faktury |
+| `6` | Dokonujący płatności |
+| `7` | JST — wystawca |
+| `8` | JST — odbiorca |
+| `9` | Grupa VAT — wystawca |
+| `10` | Grupa VAT — odbiorca |
+| `11` | Pracownik |
+
+```json
+{
+  "invoice": {
+    "third_party_addresses": [
+      {
+        "company_name": "Urząd Miejski Krakowa",
+        "tax_id": "1060006024",
+        "street": "Plac Wszystkich Świętych",
+        "building_number": "3-4",
+        "post_code": "31-004",
+        "city": "Kraków",
+        "country_code": "PL",
+        "role_code": "8"
+      }
+    ]
+  }
+}
+```
+
+> **Uwaga:** `third_party_addresses` oraz adresy JST (`local_government_*_address`) współistnieją — nie zastępują się. Podmioty w rolach 7–10 można podać dowolną z dwóch dróg: w tablicy `third_party_addresses` (z `role_code`) albo w uproszczonych slotach `local_government_recipient_address` / `local_government_seller_address`.
+
+### Warunki transakcji (transaction_terms)
+
+Pole `transaction_terms` (obiekt) pozwala wskazać umowy i zamówienia powiązane z fakturą (WarunkiTransakcji wg schemy KSeF). Dostępne dla rodziny faktur: VAT, korygująca, marża, zaliczkowa, końcowa (nie dotyczy OSS).
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `contracts` | array | Lista umów — obiekty `{number, date}` |
+| `orders` | array | Lista zamówień — obiekty `{number, date}` |
+
+```json
+{
+  "invoice": {
+    "transaction_terms": {
+      "contracts": [
+        { "number": "UM/2026/01", "date": "2026-01-10" }
+      ],
+      "orders": [
+        { "number": "ZAM/2026/07", "date": "2026-02-01" }
+      ]
+    }
+  }
+}
+```
+
+### Adresy JST (Jednostka Samorządu Terytorialnego)
+
+Przy fakturach dla JST można podać adres odbiorcy (`local_government_recipient_address`) oraz adres sprzedawcy (`local_government_seller_address`):
 
 ```json
 {
   "invoice": {
     "local_government_recipient_address": {
       "company_name": "Urząd Miejski Krakowa",
-      "nip": "1060006024",
+      "tax_id": "1060006024",
       "street": "Plac Wszystkich Świętych",
-      "street_number": "3-4",
-      "postal_code": "31-004",
+      "building_number": "3-4",
+      "door_number": "1",
+      "post_code": "31-004",
       "city": "Kraków",
       "country": "PL"
     }
   }
 }
 ```
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `company_name` | string | Nazwa jednostki |
+| `tax_id` | string | NIP |
+| `street` | string | Ulica |
+| `building_number` | string | Nr budynku |
+| `door_number` | string | Nr lokalu |
+| `post_code` | string | Kod pocztowy |
+| `city` | string | Miasto |
+| `country` | string | Kraj (Alpha-2) |
+
+> `local_government_seller_address` można ustawić przy zapisie. Jeżeli nie zostanie podany, a na koncie w ustawieniach jest skonfigurowany adres JST sprzedawcy, zostanie on dołączony do faktury automatycznie.
 
 ---
 
@@ -937,6 +1101,9 @@ Format: `/invoices.json?q[PARAMETR_modyfikator]=WARTOŚĆ`
 # Wyszukaj fakturę po numerze
 GET /api/v3/invoices.json?q[number_eq]=1/09/2024
 
+# Wyszukaj faktury po NIP klienta (same cyfry, bez prefiksu kraju i separatorów)
+GET /api/v3/invoices.json?q[clean_client_nip_eq]=5268969361
+
 # Wyszukaj klienta po NIP
 GET /api/v3/clients.json?q[nip_eq]=1234567890
 
@@ -952,6 +1119,8 @@ GET /api/v3/products.json?q[name_eq]=Usługa
 # Konto bankowe po numerze
 GET /api/v3/bank_accounts.json?q[account_number_eq]=PL61109010140000071219812874
 ```
+
+> **Uwaga:** `clean_client_nip` jest wyłącznie parametrem filtrowania na listowaniu (`q[clean_client_nip_eq]`) — nie jest polem obiektu faktury w podglądzie/tworzeniu. Dotyczy faktur VAT, marża, zaliczkowych i końcowych.
 
 ---
 
