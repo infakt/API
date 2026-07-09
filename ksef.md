@@ -353,10 +353,10 @@ Import faktur pobiera dokumenty bezpośrednio z KSeF — nie muszą istnieć w i
 
 | Operacja | Limit |
 |---|---|
-| Listowanie importu (`incomes`, `costs`) | **6 zapytań / godzinę** |
-| Pobieranie pojedynczej faktury | Obowiązują limity nakładane przez KSeF (MF) |
+| Listowanie importu (`incomes`, `costs`) | Wspólny limit **6 zapytań / godzinę** |
+| Pobieranie pojedynczej faktury (po `ksef_number`) | Nie wlicza się do limitu 6/h, ale każde wywołanie pobiera plik z KSeF, gdzie obowiązują limity MF: **8/s, 16/min, 64/h** |
 
-Przekroczenie limitu zwraca błąd `422` z opisem przyczyny.
+Przy masowym pobieraniu (setki faktur) należy throttlować żądania. Przekroczenie limitu zwraca błąd `422` z opisem przyczyny.
 
 ### Import faktur przychodowych
 
