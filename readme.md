@@ -537,7 +537,17 @@ Procedury marży (`margin_kind` — symbole do zapisu):
 - `works_of_art` — dzieła sztuki
 - `collectables_and_antiques` — przedmioty kolekcjonerskie
 
-Pozycje (Services) faktury marży nie zawierają `tax_symbol`, `pkwiu`, `cn` ani `pkob`; dostępne są `margin_amount_price` i `gross_with_margin_amount_price`.
+**Pozycje faktury marży (MarginService)** — mają własny schemat, odrębny od ogólnej [definicji pozycji (Service)](#definicja-pozycji-service). Pola `tax_symbol`, `pkwiu`, `cn`, `pkob`, `discount` i ceny netto nie występują:
+
+| Pole | Typ | Opis |
+|---|---|---|
+| `id` | integer | ID pozycji (readonly) |
+| `name` | string | Nazwa pozycji (wymagane) |
+| `unit` | string | Jednostka |
+| `quantity` | number | Ilość |
+| `gtu_id` | integer | ID kodu GTU |
+| `margin_amount_price` | integer | Marża w groszach |
+| `gross_with_margin_amount_price` | integer | Brutto łącznie z marżą w groszach |
 
 ### Faktura zaliczkowa
 
@@ -692,7 +702,7 @@ Przy fakturach dla JST można podać adres odbiorcy (`local_government_recipient
 | `city` | `city` | string | Miasto |
 | `country` | `country` | string | Kraj (Alpha-2) |
 
-> **Uwaga:** przy zapisie akceptowane są obie konwencje nazw (`tax_id` lub `nip`, `building_number` lub `street_number`, `door_number` lub `flat_number`, `post_code` lub `postal_code`). W odpowiedzi API pola zwracane są zawsze w konwencji z kolumny „odczyt".
+> **Uwaga:** przy zapisie akceptowane są obie konwencje nazw (`tax_id` lub `nip`, `building_number` lub `street_number`, `door_number` lub `flat_number`, `post_code` lub `postal_code`). W odpowiedzi API pola zwracane są zawsze w konwencji z kolumny „odczyt”.
 
 > `local_government_seller_address` można ustawić przy zapisie. Jeżeli nie zostanie podany, a na koncie w ustawieniach jest skonfigurowany adres JST sprzedawcy, zostanie on dołączony do faktury automatycznie.
 

@@ -397,6 +397,8 @@ GET /api/v3/ksef2/import/incomes.json?q[invoice_date_gteq]=2024-06-01
 
 Odpowiedź listowania zawiera `entities[]` oraz `metainfo` z polami `count`, `limit`, `offset`.
 
+> **Uwaga:** to inny kształt `metainfo` niż w standardowym [stronicowaniu API](readme.md#stronicowanie) (`count`, `total_count`, `next`, `previous`) — import KSeF 2.0 nie zwraca `total_count` ani linków `next`/`previous`.
+
 ```json
 {
   "metainfo": {
