@@ -356,7 +356,7 @@ Import faktur pobiera dokumenty bezpośrednio z KSeF — nie muszą istnieć w i
 | Listowanie importu (`incomes`, `costs`) | **6 zapytań / godzinę** |
 | Pobieranie pojedynczej faktury | Obowiązują limity nakładane przez KSeF (MF) |
 
-Przekroczenie limitu listowania zwraca kod `429`.
+Przekroczenie limitu zwraca błąd `422` z opisem przyczyny.
 
 ### Import faktur przychodowych
 

@@ -558,7 +558,7 @@ POST /api/v3/async/advance_invoices.json
 | `client_days_to_payment` | integer | Termin płatności klienta w dniach |
 | `client_notes` | string | Uwagi klienta |
 
-Zaliczka obsługuje też pola wspólne z fakturą VAT (m.in. `uuid`, `client_uuid`, `split_payment`, `split_payment_type`, `sales_kind`, `third_party_addresses`, `transaction_terms`, `local_government_recipient_address`, `ksef_number`, `amount_in_words`). Pole `invoice_date_kind` **nie występuje** na fakturze zaliczkowej. Operacje na zaliczce wykonuje się po `uuid` w URL.
+Zaliczka obsługuje też pola wspólne z fakturą VAT (m.in. `uuid`, `client_uuid`, `split_payment`, `split_payment_type`, `sales_kind`, `third_party_addresses`, `transaction_terms`, `local_government_recipient_address`, `ksef_number`, `amount_in_words`). Pola `invoice_date_kind`, `continuous_service_start_on` i `continuous_service_end_on` nie mają zastosowania na fakturze zaliczkowej. Operacje na zaliczce wykonuje się po `uuid` w URL.
 
 ### Faktura końcowa
 
@@ -681,16 +681,18 @@ Przy fakturach dla JST można podać adres odbiorcy (`local_government_recipient
 }
 ```
 
-| Pole | Typ | Opis |
-|---|---|---|
-| `company_name` | string | Nazwa jednostki |
-| `tax_id` | string | NIP |
-| `street` | string | Ulica |
-| `building_number` | string | Nr budynku |
-| `door_number` | string | Nr lokalu |
-| `post_code` | string | Kod pocztowy |
-| `city` | string | Miasto |
-| `country` | string | Kraj (Alpha-2) |
+| Pole (zapis) | Pole (odczyt) | Typ | Opis |
+|---|---|---|---|
+| `company_name` | `company_name` | string | Nazwa jednostki |
+| `tax_id` | `nip` | string | NIP |
+| `street` | `street` | string | Ulica |
+| `building_number` | `street_number` | string | Nr budynku |
+| `door_number` | `flat_number` | string | Nr lokalu |
+| `post_code` | `postal_code` | string | Kod pocztowy |
+| `city` | `city` | string | Miasto |
+| `country` | `country` | string | Kraj (Alpha-2) |
+
+> **Uwaga:** przy zapisie akceptowane są obie konwencje nazw (`tax_id` lub `nip`, `building_number` lub `street_number`, `door_number` lub `flat_number`, `post_code` lub `postal_code`). W odpowiedzi API pola zwracane są zawsze w konwencji z kolumny „odczyt".
 
 > `local_government_seller_address` można ustawić przy zapisie. Jeżeli nie zostanie podany, a na koncie w ustawieniach jest skonfigurowany adres JST sprzedawcy, zostanie on dołączony do faktury automatycznie.
 
